@@ -1,0 +1,13 @@
+/school-management-backend/node_modules
+/school-management-backend/dist
+/school-management-backend/.env
+/school-management-backend/.DS_Store
+/school-management-backend/.vscode
+/school-erp-frontend/node_modules
+/school-erp-frontend/dist
+/school-erp-frontend/.env
+/school-erp-frontend/.DS_Store
+/school-erp-frontend/.vscode
+/school-erp-frontend/.next
+
+.DS_Store
