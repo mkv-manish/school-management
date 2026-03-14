@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000/api";
 
 
 export const loginUser = async (data: any) => {
@@ -55,7 +55,7 @@ export const approveUser = async (token: string, userId: string) => {
 };
 
 export const getStudentsByClass = async (classId: string, token: string) => {
-  const res = await fetch(`http://localhost:5000/api/students/class/${classId}`, {
+  const res = await fetch(`${BASE_URL}/students/class/${classId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -64,7 +64,7 @@ export const getStudentsByClass = async (classId: string, token: string) => {
 };
 
 export const markAttendance = async (data: any, token: string) => {
-  const res = await fetch(`http://localhost:5000/api/attendance/mark`, {
+  const res = await fetch(`${BASE_URL}/attendance/mark`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
