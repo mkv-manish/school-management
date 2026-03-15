@@ -21,22 +21,62 @@ export default function RegisterTeacherPage() {
         profileBio: "",
     });
 
-    const onChange = (k: string, v: string) =>
-        setForm((p) => ({ ...p, [k]: v }));
+    const onChange = (key: string, value: string) => {
+        setForm((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const handleContactNumberChange = (value: string) => {
+        const numericOnly = value.replace(/\D/g, "").slice(0, 10);
+        onChange("contactNumber", numericOnly);
+    };
+
+    const handleExperienceChange = (value: string) => {
+        const numericOnly = value.replace(/\D/g, "").slice(0, 2);
+        onChange("experienceYears", numericOnly);
+    };
+
+    const isValidEmail = (email: string) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
 
     const onSubmit = async () => {
-        if (!form.name.trim() || !form.email.trim() || !form.password) {
-            return alert("Name, email and password required.");
+        if (!form.name.trim() || !form.email.trim() || !form.password.trim()) {
+            alert("Name, email and password required.");
+            return;
+        }
+
+        if (!isValidEmail(form.email.trim())) {
+            alert("Please enter a valid email address.");
+            return;
+        }
+
+        if (form.password.length < 6) {
+            alert("Password must be at least 6 characters.");
+            return;
+        }
+
+        if (form.contactNumber && form.contactNumber.length !== 10) {
+            alert("Contact number must be exactly 10 digits.");
+            return;
         }
 
         try {
             setLoading(true);
+
             await registerTeacher({
                 ...form,
+                name: form.name.trim(),
+                email: form.email.trim().toLowerCase(),
+                qualification: form.qualification.trim(),
+                subjectSpeciality: form.subjectSpeciality.trim(),
+                contactNumber: form.contactNumber.trim(),
+                address: form.address.trim(),
+                profileBio: form.profileBio.trim(),
                 experienceYears: form.experienceYears
                     ? Number(form.experienceYears)
                     : undefined,
             });
+
             alert("Teacher registered! Await admin approval.");
             router.push("/login");
         } catch (e: any) {
@@ -63,12 +103,16 @@ export default function RegisterTeacherPage() {
                         label="Full Name *"
                         value={form.name}
                         onChange={(v) => onChange("name", v)}
+                        placeholder="Enter full name"
                     />
+
                     <Input
                         icon={<Mail size={16} />}
                         label="Email *"
                         value={form.email}
                         onChange={(v) => onChange("email", v)}
+                        type="email"
+                        placeholder="Enter email address"
                     />
 
                     <Input
@@ -77,30 +121,43 @@ export default function RegisterTeacherPage() {
                         type="password"
                         value={form.password}
                         onChange={(v) => onChange("password", v)}
+                        placeholder="Enter password"
                     />
+
                     <Input
                         icon={<BadgeCheck size={16} />}
                         label="Qualification"
                         value={form.qualification}
                         onChange={(v) => onChange("qualification", v)}
+                        placeholder="e.g. B.Ed, M.Sc"
                     />
 
                     <Input
                         label="Experience (Years)"
                         value={form.experienceYears}
-                        onChange={(v) => onChange("experienceYears", v)}
+                        onChange={handleExperienceChange}
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={2}
+                        placeholder="e.g. 5"
                     />
+
                     <Input
                         label="Subject Speciality"
                         value={form.subjectSpeciality}
                         onChange={(v) => onChange("subjectSpeciality", v)}
+                        placeholder="e.g. Mathematics"
                     />
 
                     <Input
                         icon={<Phone size={16} />}
                         label="Contact Number"
                         value={form.contactNumber}
-                        onChange={(v) => onChange("contactNumber", v)}
+                        onChange={handleContactNumberChange}
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
+                        placeholder="10 digit mobile number"
                     />
 
                     <Input
@@ -108,6 +165,7 @@ export default function RegisterTeacherPage() {
                         label="Address"
                         value={form.address}
                         onChange={(v) => onChange("address", v)}
+                        placeholder="Enter address"
                     />
 
                     <div className="md:col-span-2">
@@ -115,12 +173,12 @@ export default function RegisterTeacherPage() {
                             Profile Bio
                         </label>
                         <textarea
-                            className="mt-1 w-full min-h-[110px] border rounded-xl p-3"
+                            className="mt-1 w-full min-h-[110px] border rounded-xl p-3 outline-none focus:ring-2 focus:ring-slate-200"
                             value={form.profileBio}
                             onChange={(e) =>
                                 onChange("profileBio", e.target.value)
                             }
-                            placeholder="About you..."
+                            placeholder="Tell something about yourself..."
                         />
                     </div>
 
@@ -128,13 +186,15 @@ export default function RegisterTeacherPage() {
                         <button
                             onClick={onSubmit}
                             disabled={loading}
-                            className="flex-1 px-5 py-3 rounded-xl text-white font-semibold bg-slate-900 hover:bg-slate-800 disabled:opacity-60"
+                            className="flex-1 px-5 py-3 rounded-xl text-white font-semibold bg-slate-900 hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {loading ? "Submitting..." : "Register Teacher"}
                         </button>
+
                         <button
                             onClick={() => router.push("/login")}
-                            className="px-5 py-3 rounded-xl border hover:bg-slate-50"
+                            disabled={loading}
+                            className="px-5 py-3 rounded-xl border hover:bg-slate-50 disabled:opacity-60"
                         >
                             Back to Login
                         </button>
@@ -151,28 +211,41 @@ function Input({
     onChange,
     type = "text",
     icon,
+    placeholder,
+    maxLength,
+    inputMode,
 }: {
     label: string;
     value: string;
     onChange: (v: string) => void;
     type?: string;
     icon?: React.ReactNode;
+    placeholder?: string;
+    maxLength?: number;
+    inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }) {
     return (
         <div>
             <label className="text-sm font-semibold text-slate-700">
                 {label}
             </label>
+
             <div className="mt-1 relative">
                 {icon ? (
                     <span className="absolute left-3 top-3.5 text-slate-400">
                         {icon}
                     </span>
                 ) : null}
+
                 <input
-                    className={`w-full border rounded-xl p-3 ${icon ? "pl-9" : ""}`}
+                    className={`w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-slate-200 ${
+                        icon ? "pl-9" : ""
+                    }`}
                     value={value}
                     type={type}
+                    inputMode={inputMode}
+                    maxLength={maxLength}
+                    placeholder={placeholder}
                     onChange={(e) => onChange(e.target.value)}
                 />
             </div>

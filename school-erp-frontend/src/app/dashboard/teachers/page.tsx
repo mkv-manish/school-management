@@ -12,6 +12,11 @@ import {
     Mail,
     GraduationCap,
     CalendarDays,
+    Phone,
+    BookOpen,
+    BadgeCheck,
+    MapPin,
+    Briefcase,
 } from "lucide-react";
 
 type Teacher = {
@@ -20,6 +25,14 @@ type Teacher = {
     email: string;
     approved: boolean;
     createdAt: string;
+    teacherProfile?: {
+        qualification?: string;
+        experienceYears?: number;
+        subjectSpeciality?: string;
+        contactNumber?: string;
+        address?: string;
+        profileBio?: string;
+    } | null;
 };
 
 export default function TeachersAdminPage() {
@@ -133,8 +146,8 @@ export default function TeachersAdminPage() {
                             </h1>
 
                             <p className="text-sm text-slate-200 mt-2 max-w-2xl">
-                                Review teacher accounts, search records, and
-                                approve pending staff access.
+                                Review teacher accounts, profile details, and
+                                approval status.
                             </p>
                         </div>
 
@@ -285,6 +298,9 @@ export default function TeachersAdminPage() {
                             <thead className="sticky top-0 z-10 bg-slate-50 border-b">
                                 <tr className="text-left text-xs uppercase tracking-wider text-slate-500">
                                     <th className="px-5 py-3">Teacher</th>
+                                    <th className="px-5 py-3">
+                                        Profile Details
+                                    </th>
                                     <th className="px-5 py-3">Created</th>
                                     <th className="px-5 py-3">Status</th>
                                     <th className="px-5 py-3">Action</th>
@@ -294,7 +310,7 @@ export default function TeachersAdminPage() {
                             <tbody className="divide-y">
                                 {loading ? (
                                     <tr>
-                                        <td className="px-5 py-6" colSpan={4}>
+                                        <td className="px-5 py-6" colSpan={5}>
                                             <div className="flex items-center gap-3 text-slate-600">
                                                 <div className="h-4 w-4 rounded-full border-2 border-slate-300 border-t-slate-900 animate-spin" />
                                                 Loading teachers...
@@ -305,7 +321,7 @@ export default function TeachersAdminPage() {
                                     <tr>
                                         <td
                                             className="px-5 py-6 text-slate-600"
-                                            colSpan={4}
+                                            colSpan={5}
                                         >
                                             No teachers found.
                                         </td>
@@ -339,6 +355,94 @@ export default function TeachersAdminPage() {
                                                                 {t.email || "-"}
                                                             </span>
                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td className="px-5 py-4 align-top">
+                                                <div className="min-w-[320px] space-y-2 text-sm text-slate-700">
+                                                    <div className="flex items-center gap-2">
+                                                        <BadgeCheck
+                                                            size={14}
+                                                            className="text-slate-400"
+                                                        />
+                                                        <span className="font-medium">
+                                                            Qualification:
+                                                        </span>
+                                                        <span>
+                                                            {t.teacherProfile
+                                                                ?.qualification ||
+                                                                "-"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <Briefcase
+                                                            size={14}
+                                                            className="text-slate-400"
+                                                        />
+                                                        <span className="font-medium">
+                                                            Experience:
+                                                        </span>
+                                                        <span>
+                                                            {t.teacherProfile
+                                                                ?.experienceYears ??
+                                                                0}{" "}
+                                                            years
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <BookOpen
+                                                            size={14}
+                                                            className="text-slate-400"
+                                                        />
+                                                        <span className="font-medium">
+                                                            Subject:
+                                                        </span>
+                                                        <span>
+                                                            {t.teacherProfile
+                                                                ?.subjectSpeciality ||
+                                                                "-"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <Phone
+                                                            size={14}
+                                                            className="text-slate-400"
+                                                        />
+                                                        <span className="font-medium">
+                                                            Contact:
+                                                        </span>
+                                                        <span>
+                                                            {t.teacherProfile
+                                                                ?.contactNumber ||
+                                                                "-"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-start gap-2">
+                                                        <MapPin
+                                                            size={14}
+                                                            className="text-slate-400 mt-0.5"
+                                                        />
+                                                        <span className="font-medium">
+                                                            Address:
+                                                        </span>
+                                                        <span className="break-words">
+                                                            {t.teacherProfile
+                                                                ?.address ||
+                                                                "-"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="rounded-xl bg-slate-50 border p-3 text-slate-600">
+                                                        <span className="font-medium text-slate-700">
+                                                            Bio:
+                                                        </span>{" "}
+                                                        {t.teacherProfile
+                                                            ?.profileBio || "-"}
                                                     </div>
                                                 </div>
                                             </td>

@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000/api";
+const BASE_URL = "http://localhost:5000/api";
 
 
 export const loginUser = async (data: any) => {
@@ -214,10 +214,18 @@ export const registerAdmin = async (payload: any) => {
 };
 
 // classes dropdown for student form
+
 export const getClassesPublic = async () => {
-  const res = await fetch(`${BASE_URL}/classes-public`, { cache: "no-store" });
+  const res = await fetch(`${BASE_URL}/classes`, {
+    cache: "no-store",
+  });
+
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || "Failed to fetch classes");
+
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to fetch classes");
+  }
+
   return data;
 };
 

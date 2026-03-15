@@ -43,11 +43,20 @@ export default function RegisterStudentPage() {
     const onChange = (k: string, v: string) =>
         setForm((p) => ({ ...p, [k]: v }));
 
+    const handleContactNumberChange = (value: string) => {
+        const numericOnly = value.replace(/\D/g, "").slice(0, 10);
+        onChange("contactNumber", numericOnly);
+    };
+
+    const isValidEmail = (email: string) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
     const onSubmit = async () => {
         if (
             !form.name.trim() ||
             !form.email.trim() ||
-            !form.password ||
+            !form.password.trim() ||
             !form.classId ||
             !form.fatherName.trim() ||
             !form.motherName.trim() ||
@@ -56,9 +65,35 @@ export default function RegisterStudentPage() {
             return alert("Please fill all required fields.");
         }
 
+        if (!isValidEmail(form.email.trim())) {
+            return alert("Please enter a valid student email address.");
+        }
+
+        if (!isValidEmail(form.parentEmail.trim())) {
+            return alert("Please enter a valid parent email address.");
+        }
+
+        if (form.password.length < 6) {
+            return alert("Password must be at least 6 characters.");
+        }
+
+        if (form.contactNumber && form.contactNumber.length !== 10) {
+            return alert("Contact number must be exactly 10 digits.");
+        }
+
         try {
             setLoading(true);
-            await registerStudent(form);
+            await registerStudent({
+                ...form,
+                name: form.name.trim(),
+                email: form.email.trim().toLowerCase(),
+                password: form.password,
+                fatherName: form.fatherName.trim(),
+                motherName: form.motherName.trim(),
+                parentEmail: form.parentEmail.trim().toLowerCase(),
+                contactNumber: form.contactNumber.trim(),
+                address: form.address.trim(),
+            });
             alert("Student registered! Await admin approval.");
             router.push("/login");
         } catch (e: any) {
@@ -90,6 +125,7 @@ export default function RegisterStudentPage() {
                     <Input
                         icon={<Mail size={16} />}
                         label="Student Email *"
+                        type="email"
                         value={form.email}
                         onChange={(v) => onChange("email", v)}
                     />
@@ -141,14 +177,18 @@ export default function RegisterStudentPage() {
                     <Input
                         icon={<Mail size={16} />}
                         label="Parent Email *"
+                        type="email"
                         value={form.parentEmail}
                         onChange={(v) => onChange("parentEmail", v)}
                     />
                     <Input
                         icon={<Phone size={16} />}
                         label="Contact Number"
+                        type="tel"
                         value={form.contactNumber}
-                        onChange={(v) => onChange("contactNumber", v)}
+                        onChange={handleContactNumberChange}
+                        inputMode="numeric"
+                        maxLength={10}
                     />
 
                     <div className="md:col-span-2">
@@ -198,12 +238,16 @@ function Input({
     onChange,
     type = "text",
     icon,
+    inputMode,
+    maxLength,
 }: {
     label: string;
     value: string;
     onChange: (v: string) => void;
     type?: string;
     icon?: React.ReactNode;
+    inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+    maxLength?: number;
 }) {
     return (
         <div>
@@ -220,6 +264,8 @@ function Input({
                     className={`w-full border rounded-xl p-3 ${icon ? "pl-9" : ""}`}
                     value={value}
                     type={type}
+                    inputMode={inputMode}
+                    maxLength={maxLength}
                     onChange={(e) => onChange(e.target.value)}
                 />
             </div>

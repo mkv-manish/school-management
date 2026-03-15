@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Student from "../models/Student.js";
 import jwt from "jsonwebtoken";
+import Teacher from "../models/Teacher.js";
 
 export const registerStudent = async (req, res) => {
   try {
@@ -17,57 +18,111 @@ export const registerStudent = async (req, res) => {
       address,
     } = req.body;
 
+    const trimmedName = name?.trim();
+    const trimmedEmail = email?.trim().toLowerCase();
+    const trimmedFatherName = fatherName?.trim();
+    const trimmedMotherName = motherName?.trim();
+    const trimmedParentEmail = parentEmail?.trim().toLowerCase();
+    const trimmedContactNumber = contactNumber?.trim() || "";
+    const trimmedAddress = address?.trim() || "";
+
+    if (
+      !trimmedName ||
+      !trimmedEmail ||
+      !password ||
+      !classId ||
+      !trimmedFatherName ||
+      !trimmedMotherName ||
+      !trimmedParentEmail
+    ) {
+      return res.status(400).json({
+        message: "Please fill all required fields",
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({
+        message: "Invalid student email",
+      });
+    }
+
+    if (!emailRegex.test(trimmedParentEmail)) {
+      return res.status(400).json({
+        message: "Invalid parent email",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    if (trimmedContactNumber && !/^\d{10}$/.test(trimmedContactNumber)) {
+      return res.status(400).json({
+        message: "Contact number must be exactly 10 digits",
+      });
+    }
+
     // Check if student already exists
-    const existingStudent = await User.findOne({ email });
+    const existingStudent = await User.findOne({ email: trimmedEmail });
     if (existingStudent) {
       return res.status(400).json({ message: "Student already exists" });
     }
 
     // Check if parent already exists
-    let parentUser = await User.findOne({ email: parentEmail });
+    let parentUser = await User.findOne({ email: trimmedParentEmail });
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create student user
     const studentUser = await User.create({
-      name,
-      email,
+      name: trimmedName,
+      email: trimmedEmail,
       password: hashedPassword,
       role: "student",
       approved: false,
     });
 
-    // If parent not exists → create
-    if (!parentUser) {
-      const parentPassword = await bcrypt.hash("parent123", 10);
+    try {
+      // If parent not exists → create
+      if (!parentUser) {
+        const parentPassword = await bcrypt.hash("parent123", 10);
 
-      parentUser = await User.create({
-        name: fatherName,
-        email: parentEmail,
-        password: parentPassword,
-        role: "parent",
-        approved: false,
-        parentOf: studentUser._id,
+        parentUser = await User.create({
+          name: trimmedFatherName,
+          email: trimmedParentEmail,
+          password: parentPassword,
+          role: "parent",
+          approved: false,
+          parentOf: studentUser._id,
+        });
+      }
+
+      // Create student document
+      await Student.create({
+        userId: studentUser._id,
+        classId,
+        fatherName: trimmedFatherName,
+        motherName: trimmedMotherName,
+        contactNumber: trimmedContactNumber,
+        address: trimmedAddress,
+        parentId: parentUser._id,
       });
+    } catch (profileError) {
+      await User.findByIdAndDelete(studentUser._id);
+      throw profileError;
     }
 
-    // Create student document
-    await Student.create({
-      userId: studentUser._id,
-      classId,
-      fatherName,
-      motherName,
-      contactNumber,
-      address,
-      parentId: parentUser._id,
-    });
-
-    res.status(201).json({
+    return res.status(201).json({
       message: "Student registered successfully. Await admin approval.",
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("registerStudent error:", error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -174,34 +229,92 @@ export const registerTeacher = async (req, res) => {
       profileBio,
     } = req.body;
 
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: "Email already in use" });
+    const trimmedName = name?.trim();
+    const trimmedEmail = email?.trim().toLowerCase();
+    const trimmedQualification = qualification?.trim() || "";
+    const trimmedSubjectSpeciality = subjectSpeciality?.trim() || "";
+    const trimmedContactNumber = contactNumber?.trim() || "";
+    const trimmedAddress = address?.trim() || "";
+    const trimmedProfileBio = profileBio?.trim() || "";
+
+    if (!trimmedName || !trimmedEmail || !password) {
+      return res.status(400).json({
+        message: "Name, email and password are required",
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({
+        message: "Please enter a valid email address",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters long",
+      });
+    }
+
+    if (trimmedContactNumber && !/^\d{10}$/.test(trimmedContactNumber)) {
+      return res.status(400).json({
+        message: "Contact number must be exactly 10 digits",
+      });
+    }
+
+    let parsedExperienceYears = 0;
+    if (
+      experienceYears !== undefined &&
+      experienceYears !== null &&
+      experienceYears !== ""
+    ) {
+      parsedExperienceYears = Number(experienceYears);
+
+      if (Number.isNaN(parsedExperienceYears) || parsedExperienceYears < 0) {
+        return res.status(400).json({
+          message: "Experience years must be a valid non-negative number",
+        });
+      }
+    }
+
+    const existing = await User.findOne({ email: trimmedEmail });
+    if (existing) {
+      return res.status(400).json({ message: "Email already in use" });
+    }
 
     const hashed = await bcrypt.hash(password, 10);
 
     const teacherUser = await User.create({
-      name,
-      email,
+      name: trimmedName,
+      email: trimmedEmail,
       password: hashed,
       role: "teacher",
-      approved: false, // admin approval
+      approved: false,
     });
 
-    // optional teacher profile doc
-    await Teacher.create({
-      userId: teacherUser._id,
-      qualification,
-      experienceYears,
-      subjectSpeciality,
-      contactNumber,
-      address,
-      profileBio,
-    });
+    try {
+      await Teacher.create({
+        userId: teacherUser._id,
+        qualification: trimmedQualification,
+        experienceYears: parsedExperienceYears,
+        subjectSpeciality: trimmedSubjectSpeciality,
+        contactNumber: trimmedContactNumber,
+        address: trimmedAddress,
+        profileBio: trimmedProfileBio,
+      });
+    } catch (profileError) {
+      await User.findByIdAndDelete(teacherUser._id);
+      throw profileError;
+    }
 
     return res.status(201).json({
       message: "Teacher registered. Await admin approval.",
     });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error("registerTeacher error:", error);
+    return res.status(500).json({
+      message: "Teacher registration failed",
+      error: error.message,
+    });
   }
 };

@@ -18,6 +18,24 @@ type PendingUser = {
     role?: "teacher" | "student" | "parent" | "admin";
     approved?: boolean;
     createdAt?: string;
+    teacherProfile?: {
+        qualification?: string;
+        experienceYears?: number;
+        subjectSpeciality?: string;
+        contactNumber?: string;
+        address?: string;
+        profileBio?: string;
+    } | null;
+    studentProfile?: {
+        fatherName?: string;
+        motherName?: string;
+        contactNumber?: string;
+        address?: string;
+        className?: string;
+        section?: string;
+        parentName?: string;
+        parentEmail?: string;
+    } | null;
 };
 
 export default function AdminApprovalsPage() {
@@ -61,7 +79,15 @@ export default function AdminApprovalsPage() {
             (u) =>
                 (u.name || "").toLowerCase().includes(q) ||
                 (u.email || "").toLowerCase().includes(q) ||
-                (u.role || "").toLowerCase().includes(q),
+                (u.role || "").toLowerCase().includes(q) ||
+                (u.teacherProfile?.qualification || "")
+                    .toLowerCase()
+                    .includes(q) ||
+                (u.teacherProfile?.subjectSpeciality || "")
+                    .toLowerCase()
+                    .includes(q) ||
+                (u.studentProfile?.className || "").toLowerCase().includes(q) ||
+                (u.studentProfile?.parentEmail || "").toLowerCase().includes(q),
         );
     }, [users, search]);
 
@@ -89,7 +115,6 @@ export default function AdminApprovalsPage() {
 
     return (
         <div className="space-y-6">
-            {/* Hero */}
             <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 text-white p-6 md:p-8 shadow-sm">
                 <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
                     <div>
@@ -101,8 +126,8 @@ export default function AdminApprovalsPage() {
                             Pending Approvals
                         </h1>
                         <p className="mt-2 text-slate-200 max-w-2xl">
-                            Review and approve teacher, student, and parent
-                            registrations before they access the system.
+                            Review teacher and student registration details
+                            before approving access to the system.
                         </p>
                     </div>
 
@@ -130,7 +155,6 @@ export default function AdminApprovalsPage() {
                 </div>
             ) : null}
 
-            {/* Controls */}
             <div className="rounded-2xl border bg-white shadow-sm p-5">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div>
@@ -138,7 +162,8 @@ export default function AdminApprovalsPage() {
                             Search Pending Users
                         </div>
                         <div className="text-sm text-slate-500 mt-1">
-                            Find pending registrations by name, email, or role.
+                            Find pending registrations by name, email, role,
+                            class, subject, or parent email.
                         </div>
                     </div>
 
@@ -171,7 +196,6 @@ export default function AdminApprovalsPage() {
                 </div>
             </div>
 
-            {/* Summary Cards */}
             <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
                 <SummaryCard
                     title="Pending Users"
@@ -199,7 +223,6 @@ export default function AdminApprovalsPage() {
                 />
             </div>
 
-            {/* Pending List */}
             <div className="rounded-3xl border bg-white shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b bg-slate-50">
                     <h2 className="text-lg font-semibold text-slate-900">
@@ -230,13 +253,12 @@ export default function AdminApprovalsPage() {
                     <div className="divide-y">
                         {filteredUsers.map((user) => (
                             <div key={user._id} className="p-5">
-                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                                    <div className="min-w-0">
+                                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <div className="text-lg font-semibold text-slate-900">
                                                 {user.name || "Unnamed User"}
                                             </div>
-
                                             <RoleBadge role={user.role} />
                                         </div>
 
@@ -252,6 +274,114 @@ export default function AdminApprovalsPage() {
                                                   ).toLocaleString()
                                                 : "-"}
                                         </div>
+
+                                        {user.role === "teacher" &&
+                                        user.teacherProfile ? (
+                                            <div className="mt-4 grid sm:grid-cols-2 gap-2 text-sm text-slate-600 rounded-2xl bg-slate-50 p-4 border">
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Qualification:
+                                                    </span>{" "}
+                                                    {user.teacherProfile
+                                                        .qualification || "-"}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Experience:
+                                                    </span>{" "}
+                                                    {user.teacherProfile
+                                                        .experienceYears ??
+                                                        0}{" "}
+                                                    years
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Subject:
+                                                    </span>{" "}
+                                                    {user.teacherProfile
+                                                        .subjectSpeciality ||
+                                                        "-"}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Contact:
+                                                    </span>{" "}
+                                                    {user.teacherProfile
+                                                        .contactNumber || "-"}
+                                                </div>
+                                                <div className="sm:col-span-2">
+                                                    <span className="font-medium text-slate-700">
+                                                        Address:
+                                                    </span>{" "}
+                                                    {user.teacherProfile
+                                                        .address || "-"}
+                                                </div>
+                                                <div className="sm:col-span-2">
+                                                    <span className="font-medium text-slate-700">
+                                                        Bio:
+                                                    </span>{" "}
+                                                    {user.teacherProfile
+                                                        .profileBio || "-"}
+                                                </div>
+                                            </div>
+                                        ) : null}
+
+                                        {user.role === "student" &&
+                                        user.studentProfile ? (
+                                            <div className="mt-4 grid sm:grid-cols-2 gap-2 text-sm text-slate-600 rounded-2xl bg-slate-50 p-4 border">
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Class:
+                                                    </span>{" "}
+                                                    {user.studentProfile
+                                                        .className || "-"}{" "}
+                                                    {user.studentProfile
+                                                        .section || ""}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Contact:
+                                                    </span>{" "}
+                                                    {user.studentProfile
+                                                        .contactNumber || "-"}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Father:
+                                                    </span>{" "}
+                                                    {user.studentProfile
+                                                        .fatherName || "-"}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Mother:
+                                                    </span>{" "}
+                                                    {user.studentProfile
+                                                        .motherName || "-"}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Parent Name:
+                                                    </span>{" "}
+                                                    {user.studentProfile
+                                                        .parentName || "-"}
+                                                </div>
+                                                <div>
+                                                    <span className="font-medium text-slate-700">
+                                                        Parent Email:
+                                                    </span>{" "}
+                                                    {user.studentProfile
+                                                        .parentEmail || "-"}
+                                                </div>
+                                                <div className="sm:col-span-2">
+                                                    <span className="font-medium text-slate-700">
+                                                        Address:
+                                                    </span>{" "}
+                                                    {user.studentProfile
+                                                        .address || "-"}
+                                                </div>
+                                            </div>
+                                        ) : null}
                                     </div>
 
                                     <div className="flex items-center gap-3">
