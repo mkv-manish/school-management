@@ -141,9 +141,18 @@ export default function HomePage() {
 
             {/* Footer */}
             <footer className="border-t bg-white">
-                <div className="max-w-7xl mx-auto px-6 py-6 text-sm text-slate-500 flex justify-between">
-                    <span>© {new Date().getFullYear()} School ERP</span>
-                    <span>Built with Next.js + Node.js</span>
+                <div className="max-w-7xl mx-auto px-6 py-6 text-sm text-slate-500 flex flex-col md:flex-row items-center justify-between gap-2">
+                    <span>
+                        © {new Date().getFullYear()} God Father International
+                        School, Naitand. All rights reserved.
+                    </span>
+
+                    <span>
+                        Developed & Maintaine by{" "}
+                        <span className="font-semibold text-slate-700">
+                            Manish Kumar
+                        </span>
+                    </span>
                 </div>
             </footer>
         </div>
