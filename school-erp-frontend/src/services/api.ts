@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://school-management-r669.onrender.com/api";
 
 
 export const loginUser = async (data: any) => {
@@ -663,5 +663,48 @@ export const generateFeesFromStructure = async (
   if (!res.ok) {
     throw new Error(data?.message || "Failed to generate fees from structure");
   }
+  return data;
+};
+
+export const getAdminAttendanceSummary = async (
+  token: string,
+  date: string
+) => {
+  const res = await fetch(
+    `${BASE_URL}/admin/attendance?date=${encodeURIComponent(date)}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }
+  );
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to load attendance summary");
+  }
+
+  return data;
+};
+
+export const getAdminAttendanceClassDetails = async (
+  token: string,
+  classId: string,
+  date: string
+) => {
+  const res = await fetch(
+    `${BASE_URL}/admin/attendance/class/${classId}?date=${encodeURIComponent(
+      date
+    )}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }
+  );
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to load class attendance");
+  }
+
   return data;
 };

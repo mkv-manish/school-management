@@ -1,5 +1,11 @@
 import express from "express";
-import { getPendingUsers, approveUser, getTeachers } from "../controllers/adminController.js";
+import {
+  getPendingUsers,
+  approveUser,
+  getTeachers,
+  getAdminAttendanceSummary,
+  getAdminAttendanceClassDetails,
+} from "../controllers/adminController.js";
 import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -25,6 +31,20 @@ router.get(
   protect,
   authorizeRoles("admin"),
   getTeachers
+);
+
+router.get(
+  "/attendance",
+  protect,
+  authorizeRoles("admin"),
+  getAdminAttendanceSummary
+);
+
+router.get(
+  "/attendance/class/:classId",
+  protect,
+  authorizeRoles("admin"),
+  getAdminAttendanceClassDetails
 );
 
 export default router;

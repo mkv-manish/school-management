@@ -74,6 +74,11 @@ export default function Sidebar({ onNavigate }: Props) {
                 icon: BookOpen,
             },
             {
+                label: "Attendance",
+                href: "/dashboard/attendance",
+                icon: ClipboardList,
+            },
+            {
                 label: "Notices",
                 href: "/dashboard/notices",
                 icon: Bell,
